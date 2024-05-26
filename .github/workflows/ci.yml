@@ -21,4 +21,5 @@ jobs:
       with:
         node-version: 18
         cache: 'npm'
+    - run: npm run build
     - run: npm run ci
