@@ -7,12 +7,14 @@ import { getModelToken } from '@nestjs/mongoose';
 describe('CategoriesService', () => {
   let service: CategoriesService;
 
-  const CATEGORY_MATH = {
+  const CATEGORY_MATH: Category = {
     id: 'math',
     title: 'Math',
     createdAt: new Date('12-12-2001'),
-    updated: new Date('12-12-2002'),
+    updatedAt: new Date('12-12-2002'),
   };
+
+  const MOCK_CATEGORY_ID = 'math'
 
   const mockCategoryModel = {
     create: jest.fn(),
@@ -57,12 +59,11 @@ describe('CategoriesService', () => {
   describe('find category', () => {
     it('should return category id "math" on success', async () => {
       const expectedResult = CATEGORY_MATH;
-      const id = 'math';
       mockCategoryModel.findOne.mockResolvedValue(expectedResult);
 
-      const result = await service.findOne(id);
+      const result = await service.findOne(MOCK_CATEGORY_ID);
 
-      expect(mockCategoryModel.findOne).toHaveBeenCalledWith({ id });
+      expect(mockCategoryModel.findOne).toHaveBeenCalledWith({ id: MOCK_CATEGORY_ID });
       expect(result).toEqual(expectedResult);
     });
   });
@@ -81,19 +82,17 @@ describe('CategoriesService', () => {
 
   describe('update category', () => {
     it('should update category', async () => {
-      const CATEGORY_MATH_UPDATE = {
-        id: 'math',
-        title: 'Math 2',
-      };
+      const CATEGORY_MATH_UPDATE = CATEGORY_MATH
+      const newTitle = 'New math'
+      CATEGORY_MATH_UPDATE.title = newTitle
       const expectedResult = CATEGORY_MATH_UPDATE;
-      const id = 'math';
       mockCategoryModel.findOneAndUpdate.mockResolvedValue(expectedResult);
 
-      const result = await service.update(id, { title: 'Math 2' });
+      const result = await service.update(MOCK_CATEGORY_ID, { title: newTitle });
 
       expect(mockCategoryModel.findOneAndUpdate).toHaveBeenCalledWith(
-        { id },
-        { title: 'Math 2' },
+        { id: MOCK_CATEGORY_ID },
+        { title: newTitle },
         { new: true },
       );
       expect(result).toEqual(expectedResult);
@@ -103,12 +102,11 @@ describe('CategoriesService', () => {
   describe('delete category', () => {
     it('should delete category', async () => {
       const expectedResult = CATEGORY_MATH;
-      const id = 'math';
       mockCategoryModel.findOneAndDelete.mockResolvedValue(expectedResult);
 
-      const result = await service.delete(id);
+      const result = await service.delete(MOCK_CATEGORY_ID);
 
-      expect(mockCategoryModel.findOneAndDelete).toHaveBeenCalledWith({ id });
+      expect(mockCategoryModel.findOneAndDelete).toHaveBeenCalledWith({ id: MOCK_CATEGORY_ID });
       expect(result).toEqual(expectedResult);
     });
   });

@@ -22,6 +22,8 @@ describe('CategoriesController', () => {
     updatedAt: new Date('12-12-2002'),
   };
 
+  const MOCK_CATEGORY_ID = 'math';
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CategoriesController],
@@ -55,10 +57,9 @@ describe('CategoriesController', () => {
   describe('findOne', () => {
     it('should return a category', async () => {
       const expectedResult = CATEGORY_MATH;
-      const id = 'math';
       mockCategoriesService.findOne.mockResolvedValue(expectedResult);
 
-      const result = await controller.findOne(id);
+      const result = await controller.findOne(MOCK_CATEGORY_ID);
 
       expect(result).toEqual(expectedResult);
     });
@@ -78,15 +79,13 @@ describe('CategoriesController', () => {
 
   describe('update', () => {
     it('should update a category', async () => {
-      const CATEGORY_MATH_UPDATE = {
-        id: 'math',
-        title: 'Math 2',
-      };
+      const CATEGORY_MATH_UPDATE = CATEGORY_MATH
+      const newTitle = 'New math'
+      CATEGORY_MATH_UPDATE.title = newTitle
       const expectedResult = CATEGORY_MATH_UPDATE;
-      const id = 'math';
       mockCategoriesService.update.mockResolvedValue(expectedResult);
 
-      const result = await service.update(id, { title: 'Math 2' });
+      const result = await controller.update(MOCK_CATEGORY_ID, { title: 'Math 2' });
 
       expect(result).toEqual(expectedResult);
     });
@@ -95,10 +94,9 @@ describe('CategoriesController', () => {
   describe('delete', () => {
     it('should delete a category', async () => {
       const expectedResult = CATEGORY_MATH;
-      const id = 'math';
       mockCategoriesService.delete.mockResolvedValue(expectedResult);
 
-      const result = await controller.delete(id);
+      const result = await controller.delete(MOCK_CATEGORY_ID);
 
       expect(result).toEqual(expectedResult);
     });
