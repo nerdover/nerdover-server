@@ -1,9 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { Category } from './schemas/category.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { error } from 'console';
 
 @Injectable()
 export class CategoriesService {
@@ -13,25 +19,63 @@ export class CategoriesService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
-    return this.categoryModel.create(createCategoryDto);
+    try {
+      const createdCategory =
+        await this.categoryModel.create(createCategoryDto);
+      return createdCategory;
+    } catch (err) {
+      if (err.code === 11000) {
+        throw new BadRequestException('Duplicated Category ID');
+      }
+      throw err;
+    }
   }
 
   async find() {
     const categories = await this.categoryModel.find();
+    if (!categories) {
+      throw new NotFoundException('Categories are not found');
+    }
     return categories;
   }
 
   async findOne(id: string) {
-    return this.categoryModel.findOne({ id });
+    const foundCategory = await this.categoryModel.findOne({ id });
+    if (!foundCategory) {
+      throw new NotFoundException(`Category with ID=${id} is not found`);
+    }
+    return foundCategory;
   }
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryModel.findOneAndUpdate({ id }, updateCategoryDto, {
-      new: true,
-    });
+    try {
+      const updatedCategory = await this.categoryModel.findOneAndUpdate(
+        { id },
+        updateCategoryDto,
+        {
+          new: true,
+        },
+      );
+
+      if (!updatedCategory) {
+        throw new NotFoundException(`Category with ID=${id} is not found`);
+      }
+      return updatedCategory;
+    } catch (err) {
+      throw err;
+    }
   }
 
   async delete(id: string) {
-    return this.categoryModel.findOneAndDelete({ id });
+    try {
+      const deletedCategory = await this.categoryModel.findOneAndDelete({ id });
+
+      if (!deletedCategory) {
+        throw new NotFoundException(`Category with ID=${id} is not found`);
+      }
+      return deletedCategory;
+    } catch (err) {
+      throw err;
+    }
   }
 }
