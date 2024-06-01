@@ -2,14 +2,12 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { Category } from './schemas/category.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { error } from 'console';
 
 @Injectable()
 export class CategoriesService {
@@ -74,6 +72,47 @@ export class CategoriesService {
         throw new NotFoundException(`Category with ID=${id} is not found`);
       }
       return deletedCategory;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getMap() {
+    try {
+      const lessonMap = await this.categoryModel.aggregate([
+        {
+          $lookup: {
+            from: 'lessons',
+            localField: 'id',
+            foreignField: 'categoryId',
+            as: 'lessons',
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            id: '$id',
+            title: '$title',
+            cover: '$cover',
+            createdAt: '$createdAt',
+            updatedAt: '$updatedAt',
+            lessons: {
+              $map: {
+                input: '$lessons',
+                as: 'lesson',
+                in: {
+                  id: '$$lesson.id',
+                  title: '$$lesson.title',
+                  categoryId: '$$lesson.categoryId',
+                  createdAt: '$$lesson.createdAt',
+                  updatedAt: '$$lesson.updatedAt',
+                },
+              },
+            },
+          },
+        },
+      ]);
+      return lessonMap;
     } catch (err) {
       throw err;
     }

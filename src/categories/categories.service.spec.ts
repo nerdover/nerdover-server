@@ -17,13 +17,24 @@ describe('CategoriesService', () => {
 
   const MOCK_CATEGORY_ID = 'math';
 
+  const MOCK_MAP = [
+    {
+      id: 'math',
+      lessons: [
+        {
+          id: 'integer'
+        }
+      ]
+    }
+  ]
+
   const mockCategoryModel = {
     create: jest.fn(),
     find: jest.fn(),
     findOne: jest.fn(),
     findOneAndUpdate: jest.fn(),
     findOneAndDelete: jest.fn(),
-    // aggregate: jest.fn(),
+    aggregate: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -178,4 +189,23 @@ describe('CategoriesService', () => {
       await expect(result).rejects.toThrow(Error);
     });
   });
+
+  describe('get map of lesson overview', () => {
+    it('should return a map of lesson overview', async () => {
+      const expectedResult = MOCK_MAP
+      mockCategoryModel.aggregate.mockResolvedValue(MOCK_MAP)
+
+      const result = await service.getMap();
+
+      expect(result).toEqual(expectedResult)
+    })
+
+    it('should throw error if get map is unsuccessful', async () => {
+      mockCategoryModel.aggregate.mockRejectedValue(new Error())
+
+      const result = service.getMap();
+
+      await expect(result).rejects.toThrow(Error)
+    })
+  })
 });

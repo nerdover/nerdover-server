@@ -42,4 +42,9 @@ export class CategoriesController {
   delete(@Param('categoryId') id: string) {
     return this.categoriesService.delete(id);
   }
+
+  @Get('utils/map')
+  getMap() {
+    return this.categoriesService.getMap();
+  }
 }
