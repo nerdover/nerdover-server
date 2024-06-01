@@ -3,6 +3,7 @@ import { LessonsService } from './lessons.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Lesson } from './schemas/lesson.schema';
 import { CreateLessonDto } from './dto/create-lesson.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('LessonsService', () => {
   let service: LessonsService;
@@ -42,6 +43,10 @@ describe('LessonsService', () => {
     service = module.get<LessonsService>(LessonsService);
   });
 
+  afterEach(async () => {
+    jest.clearAllMocks();
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
@@ -62,6 +67,20 @@ describe('LessonsService', () => {
       expect(mockLessonModel.create).toHaveBeenCalledWith(dto);
       expect(result).toEqual(expectedResult);
     });
+
+    it('should throw error if create duplicated lesson', async () => {
+      const dto: CreateLessonDto = {
+        id: 'integer',
+        title: 'Integer',
+        categoryId: 'math',
+        content: '',
+      };
+      mockLessonModel.create.mockRejectedValue({ code: 11000 });
+
+      const result = service.create(dto);
+
+      await expect(result).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('find lesson', () => {
@@ -77,6 +96,14 @@ describe('LessonsService', () => {
       });
       expect(result).toEqual(expectedResult);
     });
+
+    it('should throw error if found lesson is null', async () => {
+      mockLessonModel.findOne.mockResolvedValue(null);
+
+      const result = service.findOne(MOCK_CATEGORY_ID, MOCK_LESSON_ID);
+
+      await expect(result).rejects.toThrow(NotFoundException);
+    });
   });
 
   describe('find all lessons', () => {
@@ -88,6 +115,14 @@ describe('LessonsService', () => {
 
       expect(mockLessonModel.find).toHaveBeenCalled();
       expect(result).toEqual(expectedResult);
+    });
+
+    it('should throw error if lessons are null', async () => {
+      mockLessonModel.find.mockResolvedValue(null);
+
+      const result = service.find();
+
+      await expect(result).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -113,6 +148,26 @@ describe('LessonsService', () => {
       );
       expect(result).toEqual(expectedResult);
     });
+
+    it('should throw error if found lesson is null', async () => {
+      mockLessonModel.findOneAndUpdate.mockResolvedValue(null);
+
+      const result = service.update(MOCK_CATEGORY_ID, MOCK_LESSON_ID, {
+        title: 'New integer',
+      });
+
+      await expect(result).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw error if update is unsuccessful', async () => {
+      mockLessonModel.findOneAndUpdate.mockRejectedValue(new Error());
+
+      const result = service.update(MOCK_CATEGORY_ID, MOCK_LESSON_ID, {
+        title: 'New integer',
+      });
+
+      await expect(result).rejects.toThrow(Error);
+    });
   });
 
   describe('delete lesson', () => {
@@ -127,6 +182,22 @@ describe('LessonsService', () => {
         categoryId: MOCK_CATEGORY_ID,
       });
       expect(result).toEqual(expectedResult);
+    });
+
+    it('should throw error if found lesson is null', async () => {
+      mockLessonModel.findOneAndDelete.mockResolvedValue(null);
+
+      const result = service.delete(MOCK_CATEGORY_ID, MOCK_LESSON_ID);
+
+      await expect(result).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw error if delete is unsuccessful', async () => {
+      mockLessonModel.findOneAndDelete.mockRejectedValue(new Error());
+
+      const result = service.delete(MOCK_CATEGORY_ID, MOCK_LESSON_ID);
+
+      await expect(result).rejects.toThrow(Error);
     });
   });
 });
