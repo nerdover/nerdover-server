@@ -8,16 +8,31 @@ import { Lesson } from './schemas/lesson.schema';
 import { Model } from 'mongoose';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
+import {
+  CreateLessonOptions,
+  UpdateLessonOptions,
+} from '../core/options-type';
+import { PhotosService } from '../photos/photos.service';
 
 @Injectable()
 export class LessonsService {
   constructor(
     @InjectModel(Lesson.name)
     private readonly lessonModel: Model<Lesson>,
+    private readonly photosService: PhotosService,
   ) {}
 
-  async create(createLessonDto: CreateLessonDto) {
+  async create(
+    createLessonDto: CreateLessonDto,
+    createLessonOptions?: CreateLessonOptions,
+  ) {
     try {
+      if (createLessonOptions?.cover) {
+        const createdCover = await this.photosService.create(
+          createLessonOptions.cover,
+        );
+        createLessonDto.cover = createdCover.path;
+      }
       const createdLesson = await this.lessonModel.create(createLessonDto);
       return createdLesson;
     } catch (err) {
@@ -51,8 +66,15 @@ export class LessonsService {
     categoryId: string,
     lessonId: string,
     updateLessonDto: UpdateLessonDto,
+    updateLessonOptions?: UpdateLessonOptions,
   ) {
     try {
+      if (updateLessonOptions?.cover) {
+        const createdCover = await this.photosService.create(
+          updateLessonOptions.cover,
+        );
+        updateLessonDto.cover = createdCover.path;
+      }
       const updatedLesson = await this.lessonModel.findOneAndUpdate(
         { id: lessonId, categoryId },
         updateLessonDto,

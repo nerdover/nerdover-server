@@ -5,3 +5,11 @@ export type CreateCategoryOptions = {
 export type UpdateCategoryOptions = {
     cover?: Express.Multer.File
 }
+
+export type CreateLessonOptions = {
+    cover?: Express.Multer.File
+}
+
+export type UpdateLessonOptions = {
+    cover?: Express.Multer.File
+}
