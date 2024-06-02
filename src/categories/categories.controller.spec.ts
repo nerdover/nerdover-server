@@ -5,7 +5,6 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 
 describe('CategoriesController', () => {
   let controller: CategoriesController;
-  let service: CategoriesService;
 
   const mockCategoriesService = {
     create: jest.fn(),
@@ -13,11 +12,24 @@ describe('CategoriesController', () => {
     findOne: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+    getMap: jest.fn(),
   };
+
+  const MOCK_MAP = [
+    {
+      id: 'math',
+      lessons: [
+        {
+          id: 'integer',
+        },
+      ],
+    },
+  ];
 
   const CATEGORY_MATH = {
     id: 'math',
     title: 'Math',
+    cover: 'a',
     createdAt: new Date('12-12-2001'),
     updatedAt: new Date('12-12-2002'),
   };
@@ -36,7 +48,6 @@ describe('CategoriesController', () => {
     }).compile();
 
     controller = module.get<CategoriesController>(CategoriesController);
-    service = module.get<CategoriesService>(CategoriesService);
   });
 
   it('should be defined', () => {
@@ -79,13 +90,15 @@ describe('CategoriesController', () => {
 
   describe('update', () => {
     it('should update a category', async () => {
-      const CATEGORY_MATH_UPDATE = CATEGORY_MATH
-      const newTitle = 'New math'
-      CATEGORY_MATH_UPDATE.title = newTitle
+      const CATEGORY_MATH_UPDATE = CATEGORY_MATH;
+      const newTitle = 'New math';
+      CATEGORY_MATH_UPDATE.title = newTitle;
       const expectedResult = CATEGORY_MATH_UPDATE;
       mockCategoriesService.update.mockResolvedValue(expectedResult);
 
-      const result = await controller.update(MOCK_CATEGORY_ID, { title: 'Math 2' });
+      const result = await controller.update(MOCK_CATEGORY_ID, {
+        title: 'Math 2',
+      });
 
       expect(result).toEqual(expectedResult);
     });
@@ -97,6 +110,17 @@ describe('CategoriesController', () => {
       mockCategoriesService.delete.mockResolvedValue(expectedResult);
 
       const result = await controller.delete(MOCK_CATEGORY_ID);
+
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+  describe('get lesson map', () => {
+    it('should return lesson map', async () => {
+      const expectedResult = [MOCK_MAP];
+      mockCategoriesService.getMap.mockResolvedValue(expectedResult);
+
+      const result = await controller.getMap();
 
       expect(result).toEqual(expectedResult);
     });

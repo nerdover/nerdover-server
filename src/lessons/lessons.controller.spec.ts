@@ -7,8 +7,6 @@ import { Lesson } from './schemas/lesson.schema';
 describe('LessonsController', () => {
   let controller: LessonsController;
 
-  let service: LessonsService;
-
   const LESSON_INT: Lesson = {
     id: 'integer',
     title: 'Integer',
@@ -41,7 +39,6 @@ describe('LessonsController', () => {
     }).compile();
 
     controller = module.get<LessonsController>(LessonsController);
-    service = module.get<LessonsService>(LessonsService);
   });
 
   it('should be defined', () => {

@@ -4,6 +4,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Lesson } from './schemas/lesson.schema';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { PhotosService } from '../photos/photos.service';
 
 describe('LessonsService', () => {
   let service: LessonsService;
@@ -29,6 +30,10 @@ describe('LessonsService', () => {
     // aggregate: jest.fn(),
   };
 
+  const mockPhotosService = {
+    create: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -36,6 +41,10 @@ describe('LessonsService', () => {
         {
           provide: getModelToken(Lesson.name),
           useValue: mockLessonModel,
+        },
+        {
+          provide: PhotosService,
+          useValue: mockPhotosService,
         },
       ],
     }).compile();

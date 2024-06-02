@@ -6,10 +6,14 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadType } from '../core/upload-file-type';
 
 @Controller('api/lessons')
 export class LessonsController {
@@ -29,17 +33,25 @@ export class LessonsController {
   }
 
   @Post()
-  create(@Body() createLessonDto: CreateLessonDto) {
-    return this.lessonsService.create(createLessonDto);
+  @UseInterceptors(FileInterceptor(UploadType.COVER))
+  create(
+    @Body() createLessonDto: CreateLessonDto,
+    @UploadedFile() cover?: Express.Multer.File,
+  ) {
+    return this.lessonsService.create(createLessonDto, { cover });
   }
 
   @Patch(':categoryId/:lessonId')
+  @UseInterceptors(FileInterceptor(UploadType.COVER))
   update(
     @Param('categoryId') categoryId: string,
     @Param('lessonId') lessonId: string,
     @Body() updateLessonDto: UpdateLessonDto,
+    @UploadedFile() cover?: Express.Multer.File,
   ) {
-    return this.lessonsService.update(categoryId, lessonId, updateLessonDto);
+    return this.lessonsService.update(categoryId, lessonId, updateLessonDto, {
+      cover,
+    });
   }
 
   @Delete(':categoryId/:lessonId')
