@@ -5,7 +5,6 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 
 describe('CategoriesController', () => {
   let controller: CategoriesController;
-  let service: CategoriesService;
 
   const mockCategoriesService = {
     create: jest.fn(),
@@ -30,6 +29,7 @@ describe('CategoriesController', () => {
   const CATEGORY_MATH = {
     id: 'math',
     title: 'Math',
+    cover: 'a',
     createdAt: new Date('12-12-2001'),
     updatedAt: new Date('12-12-2002'),
   };
@@ -48,7 +48,6 @@ describe('CategoriesController', () => {
     }).compile();
 
     controller = module.get<CategoriesController>(CategoriesController);
-    service = module.get<CategoriesService>(CategoriesService);
   });
 
   it('should be defined', () => {

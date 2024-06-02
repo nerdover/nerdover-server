@@ -4,6 +4,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { Category } from './schemas/category.schema';
 import { getModelToken } from '@nestjs/mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { PhotosService } from '../photos/photos.service';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
@@ -11,6 +12,7 @@ describe('CategoriesService', () => {
   const CATEGORY_MATH: Category = {
     id: 'math',
     title: 'Math',
+    cover: 'a',
     createdAt: new Date('12-12-2001'),
     updatedAt: new Date('12-12-2002'),
   };
@@ -22,11 +24,11 @@ describe('CategoriesService', () => {
       id: 'math',
       lessons: [
         {
-          id: 'integer'
-        }
-      ]
-    }
-  ]
+          id: 'integer',
+        },
+      ],
+    },
+  ];
 
   const mockCategoryModel = {
     create: jest.fn(),
@@ -37,6 +39,10 @@ describe('CategoriesService', () => {
     aggregate: jest.fn(),
   };
 
+  const mockPhotosService = {
+    create: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -45,6 +51,10 @@ describe('CategoriesService', () => {
           provide: getModelToken(Category.name),
           useValue: mockCategoryModel,
         },
+        {
+          provide: PhotosService,
+          useValue: mockPhotosService
+        }
       ],
     }).compile();
 
@@ -192,20 +202,20 @@ describe('CategoriesService', () => {
 
   describe('get map of lesson overview', () => {
     it('should return a map of lesson overview', async () => {
-      const expectedResult = MOCK_MAP
-      mockCategoryModel.aggregate.mockResolvedValue(MOCK_MAP)
+      const expectedResult = MOCK_MAP;
+      mockCategoryModel.aggregate.mockResolvedValue(MOCK_MAP);
 
       const result = await service.getMap();
 
-      expect(result).toEqual(expectedResult)
-    })
+      expect(result).toEqual(expectedResult);
+    });
 
     it('should throw error if get map is unsuccessful', async () => {
-      mockCategoryModel.aggregate.mockRejectedValue(new Error())
+      mockCategoryModel.aggregate.mockRejectedValue(new Error());
 
       const result = service.getMap();
 
-      await expect(result).rejects.toThrow(Error)
-    })
-  })
+      await expect(result).rejects.toThrow(Error);
+    });
+  });
 });

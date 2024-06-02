@@ -8,16 +8,31 @@ import { Category } from './schemas/category.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import {
+  CreateCategoryOptions,
+  UpdateCategoryOptions,
+} from '../core/options-type';
+import { PhotosService } from '../photos/photos.service';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectModel(Category.name)
     private readonly categoryModel: Model<Category>,
+    private readonly photosService: PhotosService,
   ) {}
 
-  async create(createCategoryDto: CreateCategoryDto) {
+  async create(
+    createCategoryDto: CreateCategoryDto,
+    createdCategoryOptions?: CreateCategoryOptions,
+  ) {
     try {
+      if (createdCategoryOptions?.cover) {
+        const createdCover = await this.photosService.create(
+          createdCategoryOptions.cover,
+        );
+        createCategoryDto.cover = createdCover.path;
+      }
       const createdCategory =
         await this.categoryModel.create(createCategoryDto);
       return createdCategory;
@@ -45,8 +60,18 @@ export class CategoriesService {
     return foundCategory;
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+    updateCategoryOptions?: UpdateCategoryOptions,
+  ) {
     try {
+      if (updateCategoryOptions?.cover) {
+        const create = await this.photosService.create(
+          updateCategoryOptions.cover,
+        );
+        updateCategoryDto.cover = create.path;
+      }
       const updatedCategory = await this.categoryModel.findOneAndUpdate(
         { id },
         updateCategoryDto,
