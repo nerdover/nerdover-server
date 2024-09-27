@@ -1,0 +1,6 @@
+@nerdover_server_HostAddress = http://localhost:5189
+
+GET {{nerdover_server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
