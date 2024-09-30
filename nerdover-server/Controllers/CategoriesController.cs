@@ -7,7 +7,7 @@ using nerdover_server.Models;
 
 namespace nerdover_server.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriesController(MasterContext context) : ControllerBase
@@ -16,6 +16,52 @@ namespace nerdover_server.Controllers
         public record UpdateCategoryDto(string Id, string Title);
 
         private readonly MasterContext _context = context;
+
+        [HttpGet("utils/map")]
+        public async Task<ActionResult<IEnumerable<LessonMap>>> GetMap()
+        {
+            //var a = await (from category in _context.Categories
+            //               join lesson in _context.Lessons on category.Id equals lesson.CategoryId into lesson1
+            //               from lesson2 in lesson1.DefaultIfEmpty()
+            //               join series in _context.Series on category.Id equals series.CategoryId into series1
+            //               from series2 in series1.DefaultIfEmpty()
+            //               join seriesLesson in _context.SeriesLessons on series2.Id equals seriesLesson.SeriesId into seriesLesson1
+            //               from seriesLesson2 in seriesLesson1.DefaultIfEmpty()
+            //               select new LessonMap
+            //               {
+            //                   Id
+            //               }
+            //               ).ToListAsync();
+            return await _context.Categories.Include(c => c.Lessons).Include(c => c.Series).ThenInclude(c => c.SeriesLessons).Select(c => new LessonMap
+            {
+                Id = c.Id,
+                Title = c.Title,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt,
+                Lessons = c.Lessons.Select(l => new IdentifiableWithTrace
+                {
+                    Id = l.Id,
+                    Title = l.Title,
+                    CreatedAt = l.CreatedAt,
+                    UpdatedAt = l.UpdatedAt
+                }),
+                Series = c.Series.Select(s => new SeriesMap
+                {
+                    Id = s.Id,
+                    Title = s.Title,
+                    CreatedAt = s.CreatedAt,
+                    UpdatedAt = s.UpdatedAt,
+                    SeriesLessons = s.SeriesLessons.Select(sl => new IdentifiableWithTrace
+                    {
+                        Id = sl.Id,
+                        Title = sl.Title,
+                        CreatedAt = sl.CreatedAt,
+                        UpdatedAt = sl.UpdatedAt,
+                    })
+                })
+            })
+                .ToListAsync();
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<IdentifiableWithTrace>>> GetCategoryIdentities()
