@@ -10,20 +10,22 @@ namespace nerdover_server.Controllers
     [ApiController]
     public class SeriesController(MasterContext context) : ControllerBase
     {
-        public record CreateSeriesDto(string Id, string Title, string CategoryId);
-        public record UpdateSeriesDto(string Id, string Title, string CategoryId);
+        public record CreateSeriesDto(string Id, string Title, string CategoryId, string? Cover);
+        public record UpdateSeriesDto(string Id, string Title, string CategoryId, string? Cover);
 
         private readonly MasterContext _context = context;
 
         [HttpGet("{categoryId}")]
-        public async Task<ActionResult<IEnumerable<IdentifiableWithTrace>>> GetSeriesIdentities(string categoryId)
+        public async Task<ActionResult<IEnumerable<Series>>> GetSeries(string categoryId)
         {
             return await _context.Series
                 .Where(s => s.CategoryId == categoryId)
-                .Select(s => new IdentifiableWithTrace
+                .Select(s => new Series
                 {
                     Id = s.Id,
+                    CategoryId = s.CategoryId,
                     Title = s.Title,
+                    Cover = s.Cover,
                     CreatedAt = s.CreatedAt,
                     UpdatedAt = s.UpdatedAt
                 }
@@ -32,7 +34,7 @@ namespace nerdover_server.Controllers
         }
 
         [HttpGet("{categoryId}/{id}")]
-        public async Task<ActionResult<Series>> GetSeriesIdentity(string categoryId, string id)
+        public async Task<ActionResult<Series>> GetSeriesById(string categoryId, string id)
         {
             var series = await _context.Series
                 .Where(s => s.CategoryId == categoryId)
@@ -66,6 +68,7 @@ namespace nerdover_server.Controllers
             DateTime now = DateTime.Now;
 
             foundSeries.Title = updateSeriesDto.Title;
+            foundSeries.Cover = updateSeriesDto.Cover;
             foundSeries.UpdatedAt = now;
 
             _context.Entry(foundSeries).State = EntityState.Modified;
@@ -104,6 +107,7 @@ namespace nerdover_server.Controllers
                 Id = createSeriesDto.Id,
                 Title = createSeriesDto.Title,
                 CategoryId = createSeriesDto.CategoryId,
+                Cover = createSeriesDto.Cover,
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -126,7 +130,7 @@ namespace nerdover_server.Controllers
                 }
             }
 
-            return CreatedAtAction(nameof(GetSeriesIdentity), new { id = newSeries.Id, categoryId = newSeries.CategoryId }, newSeries);
+            return CreatedAtAction(nameof(GetSeriesById), new { id = newSeries.Id, categoryId = newSeries.CategoryId }, newSeries);
         }
 
         [HttpDelete("{id}")]

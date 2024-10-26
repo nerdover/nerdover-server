@@ -10,31 +10,34 @@ namespace nerdover_server.Controllers
     [ApiController]
     public class SeriesLessonsController(MasterContext context) : ControllerBase
     {
-        public record CreateSeriesLessonDto(string Id, string Title, string CategoryId, string SeriesId);
-        public record UpdateSeriesLessonDto(string Id, string Title, string CategoryId, string SeriesId);
+        public record CreateSeriesLessonDto(string Id, string Title, string CategoryId, string SeriesId, string? Cover);
+        public record UpdateSeriesLessonDto(string Id, string Title, string CategoryId, string SeriesId, string? Cover);
         public record UpdateSeriesLessonContentDto(string Id, string Content, string CategoryId, string SeriesId);
-        
+
         private readonly MasterContext _context = context;
 
         [HttpGet("{categoryId}/{seriesId}")]
-        public async Task<ActionResult<IEnumerable<IdentifiableWithTrace>>> GetSeriesLessonIdentities(string categoryId, string seriesId)
+        public async Task<ActionResult<IEnumerable<SeriesLesson>>> GetSeriesLessons(string categoryId, string seriesId)
         {
             return await _context.SeriesLessons
                 .Where(sl => sl.CategoryId == categoryId)
                 .Where(sl => sl.SeriesId == seriesId)
-                .Select(l => new IdentifiableWithTrace
+                .Select(sl => new SeriesLesson
                 {
-                    Id = l.Id,
-                    Title = l.Title,
-                    CreatedAt = l.CreatedAt,
-                    UpdatedAt = l.UpdatedAt
+                    Id = sl.Id,
+                    CategoryId = sl.CategoryId,
+                    SeriesId = sl.SeriesId,
+                    Title = sl.Title,
+                    Cover = sl.Cover,
+                    CreatedAt = sl.CreatedAt,
+                    UpdatedAt = sl.UpdatedAt
                 }
                 )
                 .ToListAsync();
         }
 
         [HttpGet("{categoryId}/{seriesId}/{id}")]
-        public async Task<ActionResult<SeriesLesson>> GetSeriesLesson(string categoryId, string seriesId, string id)
+        public async Task<ActionResult<SeriesLesson>> GetSeriesLessonById(string categoryId, string seriesId, string id)
         {
             var seriesLesson = await _context.SeriesLessons
                 .Where(sl => sl.CategoryId == categoryId)
@@ -70,6 +73,7 @@ namespace nerdover_server.Controllers
             DateTime now = DateTime.Now;
 
             foundSeriesLesson.Title = updateSeriesLessonDto.Title;
+            foundSeriesLesson.Cover = updateSeriesLessonDto.Cover;
             foundSeriesLesson.UpdatedAt = now;
 
             _context.Entry(foundSeriesLesson).State = EntityState.Modified;
@@ -158,6 +162,7 @@ namespace nerdover_server.Controllers
                 Title = createSeriesLessonDto.Title,
                 CategoryId = createSeriesLessonDto.CategoryId,
                 SeriesId = createSeriesLessonDto.SeriesId,
+                Cover = createSeriesLessonDto.Cover,
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -180,7 +185,7 @@ namespace nerdover_server.Controllers
                 }
             }
 
-            return CreatedAtAction(nameof(GetSeriesLesson), new { id = newSeriesLesson.Id, categoryId = newSeriesLesson.CategoryId, seriesId = newSeriesLesson.SeriesId }, newSeriesLesson);
+            return CreatedAtAction(nameof(GetSeriesLessonById), new { id = newSeriesLesson.Id, categoryId = newSeriesLesson.CategoryId, seriesId = newSeriesLesson.SeriesId }, newSeriesLesson);
         }
 
         [HttpDelete("{id}")]

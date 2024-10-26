@@ -12,85 +12,76 @@ namespace nerdover_server.Controllers
     [ApiController]
     public class CategoriesController(MasterContext context) : ControllerBase
     {
-        public record CreateCategoryDto(string Id, string Title);
-        public record UpdateCategoryDto(string Id, string Title);
+        public record CreateCategoryDto(string Id, string Title, string? Cover);
+        public record UpdateCategoryDto(string Id, string Title, string? Cover);
 
         private readonly MasterContext _context = context;
 
         [HttpGet("utils/map")]
-        public async Task<ActionResult<IEnumerable<LessonMap>>> GetMap()
+        public async Task<ActionResult<IEnumerable<Category>>> GetMap()
         {
-            //var a = await (from category in _context.Categories
-            //               join lesson in _context.Lessons on category.Id equals lesson.CategoryId into lesson1
-            //               from lesson2 in lesson1.DefaultIfEmpty()
-            //               join series in _context.Series on category.Id equals series.CategoryId into series1
-            //               from series2 in series1.DefaultIfEmpty()
-            //               join seriesLesson in _context.SeriesLessons on series2.Id equals seriesLesson.SeriesId into seriesLesson1
-            //               from seriesLesson2 in seriesLesson1.DefaultIfEmpty()
-            //               select new LessonMap
-            //               {
-            //                   Id
-            //               }
-            //               ).ToListAsync();
-            return await _context.Categories.Include(c => c.Lessons).Include(c => c.Series).ThenInclude(c => c.SeriesLessons).Select(c => new LessonMap
-            {
-                Id = c.Id,
-                Title = c.Title,
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt,
-                Lessons = c.Lessons.Select(l => new IdentifiableWithTrace
+            return await _context.Categories
+                .Include(c => c.Lessons)
+                .Include(c => c.Series)
+                .ThenInclude(c => c.SeriesLessons)
+                .Select(c => new Category
                 {
-                    Id = l.Id,
-                    Title = l.Title,
-                    CreatedAt = l.CreatedAt,
-                    UpdatedAt = l.UpdatedAt
-                }),
-                Series = c.Series.Select(s => new SeriesMap
-                {
-                    Id = s.Id,
-                    Title = s.Title,
-                    CreatedAt = s.CreatedAt,
-                    UpdatedAt = s.UpdatedAt,
-                    SeriesLessons = s.SeriesLessons.Select(sl => new IdentifiableWithTrace
+                    Id = c.Id,
+                    Title = c.Title,
+                    Cover = c.Cover,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    Lessons = c.Lessons.Select(l => new Lesson
                     {
-                        Id = sl.Id,
-                        Title = sl.Title,
-                        CreatedAt = sl.CreatedAt,
-                        UpdatedAt = sl.UpdatedAt,
-                    })
+                        Id = l.Id,
+                        CategoryId = l.CategoryId,
+                        Title = l.Title,
+                        Cover = l.Cover,
+                        CreatedAt = l.CreatedAt,
+                        UpdatedAt = l.UpdatedAt
+                    }).ToList(),
+                    Series = c.Series.Select(s => new Series
+                    {
+                        Id = s.Id,
+                        CategoryId = s.CategoryId,
+                        Title = s.Title,
+                        Cover = s.Cover,
+                        CreatedAt = s.CreatedAt,
+                        UpdatedAt = s.UpdatedAt,
+                        SeriesLessons = s.SeriesLessons.Select(sl => new SeriesLesson
+                        {
+                            Id = sl.Id,
+                            CategoryId = sl.CategoryId,
+                            SeriesId = sl.SeriesId,
+                            Title = sl.Title,
+                            Cover = sl.Cover,
+                            CreatedAt = sl.CreatedAt,
+                            UpdatedAt = sl.UpdatedAt,
+                        }).ToList()
+                    }).ToList()
                 })
-            })
                 .ToListAsync();
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<IdentifiableWithTrace>>> GetCategoryIdentities()
+        public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
             return await _context.Categories
-                .Select(c => new IdentifiableWithTrace 
-                { 
+                .Select(c => new Category
+                {
                     Id = c.Id,
                     Title = c.Title,
+                    Cover = c.Cover,
                     CreatedAt = c.CreatedAt,
                     UpdatedAt = c.UpdatedAt
                 }
-                )
-                .ToListAsync();
+                ).ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<IdentifiableWithTrace>> GetCategoryIdentity(string id)
+        public async Task<ActionResult<Category>> GetCategoryById(string id)
         {
-            var category = await _context.Categories
-                .Select(c => new IdentifiableWithTrace 
-                    {
-                        Id = c.Id,
-                        Title = c.Title,
-                        CreatedAt = c.CreatedAt, 
-                        UpdatedAt = c.UpdatedAt 
-                    }
-                )
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)
             {
@@ -118,6 +109,7 @@ namespace nerdover_server.Controllers
             DateTime now = DateTime.Now;
 
             foundCategory.Title = updateCategoryDto.Title;
+            foundCategory.Cover = updateCategoryDto.Cover;
             foundCategory.UpdatedAt = now;
 
             _context.Entry(foundCategory).State = EntityState.Modified;
@@ -144,12 +136,14 @@ namespace nerdover_server.Controllers
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(CreateCategoryDto createCategoryDto)
         {
+            Console.WriteLine($"IS {createCategoryDto.Cover}");
             DateTime now = DateTime.Now;
 
             Category newCategory = new()
-            { 
+            {
                 Id = createCategoryDto.Id,
                 Title = createCategoryDto.Title,
+                Cover = createCategoryDto.Cover,
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -172,7 +166,7 @@ namespace nerdover_server.Controllers
                 }
             }
 
-            return CreatedAtAction(nameof(GetCategoryIdentity), new { id = newCategory.Id }, newCategory);
+            return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.Id }, newCategory);
         }
 
         [HttpDelete("{id}")]

@@ -11,6 +11,8 @@ public partial class Series
 
     public string CategoryId { get; set; } = null!;
 
+    public string? Cover { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }

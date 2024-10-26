@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using nerdover_server.DB;
 using nerdover_server.Models;
@@ -7,6 +8,7 @@ using nerdover_server.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddSingleton<IContentTypeProvider, FileExtensionContentTypeProvider>();
 var connectionString = builder.Configuration.GetConnectionString("MasterDB");
 builder.Services.AddDbContext<MasterContext>(options =>
     options.UseSqlServer(connectionString));
@@ -20,7 +22,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+ //Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -38,6 +40,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapFallbackToFile("/index.html");
+//app.MapFallbackToFile("/index.html");
 
 app.Run();

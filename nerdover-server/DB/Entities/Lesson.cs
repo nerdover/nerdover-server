@@ -11,6 +11,8 @@ public partial class Lesson
 
     public string CategoryId { get; set; } = null!;
 
+    public string? Cover { get; set; }
+
     public string? Content { get; set; }
 
     public DateTime? CreatedAt { get; set; }

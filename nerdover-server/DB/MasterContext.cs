@@ -36,6 +36,7 @@ public partial class MasterContext : IdentityDbContext<AppUser>
             entity.ToTable("Category");
 
             entity.Property(e => e.Id).HasMaxLength(50);
+            entity.Property(e => e.Cover).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(100);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
@@ -49,6 +50,7 @@ public partial class MasterContext : IdentityDbContext<AppUser>
 
             entity.Property(e => e.Id).HasMaxLength(50);
             entity.Property(e => e.CategoryId).HasMaxLength(50);
+            entity.Property(e => e.Cover).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(100);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
@@ -65,6 +67,7 @@ public partial class MasterContext : IdentityDbContext<AppUser>
 
             entity.Property(e => e.Id).HasMaxLength(50);
             entity.Property(e => e.CategoryId).HasMaxLength(50);
+            entity.Property(e => e.Cover).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(100);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
@@ -83,6 +86,7 @@ public partial class MasterContext : IdentityDbContext<AppUser>
 
             entity.Property(e => e.Id).HasMaxLength(50);
             entity.Property(e => e.CategoryId).HasMaxLength(50);
+            entity.Property(e => e.Cover).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.SeriesId).HasMaxLength(50);
             entity.Property(e => e.Title).HasMaxLength(100);

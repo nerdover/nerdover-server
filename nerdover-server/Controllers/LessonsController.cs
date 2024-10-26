@@ -10,33 +10,35 @@ namespace nerdover_server.Controllers
     [ApiController]
     public class LessonsController(MasterContext context) : ControllerBase
     {
-        public record CreateLessonDto(string Id, string Title, string CategoryId);
-        public record UpdateLessonDto(string Id, string Title, string CategoryId);
+        public record CreateLessonDto(string Id, string Title, string CategoryId, string? Cover);
+        public record UpdateLessonDto(string Id, string Title, string CategoryId, string? Cover);
         public record UpdateLessonContentDto(string Id, string Content, string CategoryId);
 
         private readonly MasterContext _context = context;
 
         [HttpGet("{categoryId}")]
-        public async Task<ActionResult<IEnumerable<IdentifiableWithTrace>>> GetLessonIdentities(string categoryId)
+        public async Task<ActionResult<IEnumerable<Lesson>>> GetLessons(string categoryId)
         {
             return await _context.Lessons
                 .Where(l => l.CategoryId == categoryId)
-                .Select(l => new IdentifiableWithTrace
+                .Select(l => new Lesson
                 {
                     Id = l.Id,
                     Title = l.Title,
+                    Cover = l.Cover,
                     CreatedAt = l.CreatedAt,
-                    UpdatedAt = l.UpdatedAt
+                    UpdatedAt = l.UpdatedAt,
+                    CategoryId = l.CategoryId,
                 }
                 )
                 .ToListAsync();
         }
 
         [HttpGet("{categoryId}/{id}")]
-        public async Task<ActionResult<Lesson>> GetLesson(string categoryId, string id)
+        public async Task<ActionResult<Lesson>> GetLessonById(string categoryId, string id)
         {
             var lesson = await _context.Lessons
-                .Where (l => l.CategoryId == categoryId)
+                .Where(l => l.CategoryId == categoryId)
                 .FirstOrDefaultAsync(l => l.Id == id);
 
             if (lesson == null)
@@ -67,6 +69,7 @@ namespace nerdover_server.Controllers
             DateTime now = DateTime.Now;
 
             foundLesson.Title = updateLessonDto.Title;
+            foundLesson.Cover = updateLessonDto.Cover;
             foundLesson.UpdatedAt = now;
 
             _context.Entry(foundLesson).State = EntityState.Modified;
@@ -148,6 +151,7 @@ namespace nerdover_server.Controllers
                 Id = createLessonDto.Id,
                 Title = createLessonDto.Title,
                 CategoryId = createLessonDto.CategoryId,
+                Cover = createLessonDto.Cover,
                 CreatedAt = now,
                 UpdatedAt = now
             };
@@ -170,7 +174,7 @@ namespace nerdover_server.Controllers
                 }
             }
 
-            return CreatedAtAction(nameof(GetLesson), new { id = newLesson.Id, categoryId = newLesson.CategoryId }, newLesson);
+            return CreatedAtAction(nameof(GetLessonById), new { id = newLesson.Id, categoryId = newLesson.CategoryId }, newLesson);
         }
 
         [HttpDelete("{id}")]

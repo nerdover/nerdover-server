@@ -9,6 +9,8 @@ public partial class Category
 
     public string Title { get; set; } = null!;
 
+    public string? Cover { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }

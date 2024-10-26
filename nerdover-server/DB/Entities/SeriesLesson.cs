@@ -12,6 +12,8 @@ public partial class SeriesLesson
     public string CategoryId { get; set; } = null!;
 
     public string SeriesId { get; set; } = null!;
+    
+    public string? Cover { get; set; }
 
     public string? Content { get; set; }
 
